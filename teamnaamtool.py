@@ -1,8 +1,11 @@
+import time
 from tkinter import *
 from tkinter import filedialog as fd
 import openpyxl
 import docx
 from docx.shared import Pt, Cm
+import base64
+import requests
 
 # variables
 wb_obj = None
@@ -11,6 +14,39 @@ excel_path: str
 text_convert_done = "Converteren geslaagd!"
 text_geen_bestand_gekozen = "Geen bestand gekozen!"
 text_bestand_geladen = "Bestand geladen: "
+
+currentVersion = '1.0.0'
+url = 'https://api.github.com/repos/Wimpeyy/ToffeToeterTeamnaamTool/contents/version.html'
+req = requests.get(url)
+if req.status_code == requests.codes.ok:
+    req = req.json()  # the response is a JSON
+    # req is now a dict with keys: name, encoding, url, size ...
+    # and content. But it is encoded with base64.
+    content = str(base64.standard_b64decode(req['content']).decode('ascii')).strip()
+    if content == currentVersion:
+        print("Versie is up to date! Versie: " + content)
+    else:
+        print("Versieverschil gevonden! Huidige versie: " + currentVersion + ". Nieuwste versie: " + content)
+        print("Downloading new version now!")
+        newVersion = requests.get("https://github.com/repos/Wimpeyy/ToffeToeterTeamnaamTool/contents/dist/teamnaamtool.exe")
+        open("teamnaamtool.exe", "wb").write(newVersion.content)
+        print("New version downloaded, restarting in 5 seconds!")
+        time.sleep(5)
+        quit()
+else:
+    print('Content was not found.')
+
+# if data == currentVersion:
+#     print("App is up to date!")
+# else:
+#     print("App is not up to date! App is on version " + currentVersion + " but could be on version " + data + "!")
+#     print("Downloading new version now!")
+#     newVersion = requests.get("https://github.com/yourapp/app-"+data+".exe")
+#     open("app.exe", "wb").write(newVersion.content)
+#     print("New version downloaded, restarting in 5 seconds!")
+#     time.sleep(5)
+#     quit()
+
 
 # Excelfile openen
 def open_excel(excelPath):
