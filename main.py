@@ -2,7 +2,7 @@ from tkinter import *
 from tkinter import filedialog as fd
 import openpyxl
 import docx
-from docx.shared import Pt
+from docx.shared import Pt, Cm
 
 # variables
 wb_obj = None
@@ -31,6 +31,13 @@ def save_to_word():
         sheet_obj = wb_obj.active
         row = sheet_obj.max_row
         doc = docx.Document()
+
+        sections = doc.sections
+        for section in sections:
+            section.top_margin = Cm(1.27)
+            section.bottom_margin = Cm(1.27)
+            section.left_margin = Cm(1.27)
+            section.right_margin = Cm(1.27)
 
         # Loop door bestand om cellen te laden en te vullen in Word
         for i in range(1, row + 1):
