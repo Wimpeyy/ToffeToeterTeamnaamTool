@@ -15,7 +15,7 @@ text_convert_done = "Converteren geslaagd!"
 text_geen_bestand_gekozen = "Geen bestand gekozen!"
 text_bestand_geladen = "Bestand geladen: "
 
-currentVersion = '1.0.0'
+currentVersion = '1.0.2'
 url = 'https://api.github.com/repos/Wimpeyy/ToffeToeterTeamnaamTool/contents/version.html'
 req = requests.get(url)
 if req.status_code == requests.codes.ok:
@@ -82,13 +82,15 @@ def save_to_word():
             paragraph = doc.add_paragraph()
             paragraph.clear()
             run = paragraph.add_run()
-
-
             run.font.name = 'Arnhem'
-            run.font.size = Pt(170)
+
+            teamNaam = str(cell_teamnaam.value)
+            if len(teamNaam.strip()) <= 24:
+                run.font.size = Pt(200)
+            else:
+                run.font.size = Pt(170)
             # Ruimte genereren tussen teamnamen
-            for j in range(0, 1):
-                run.add_break()
+            run.add_break()
 
 
             # Toevoegen teamnaam
