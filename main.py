@@ -29,7 +29,7 @@ if req.status_code == requests.codes.ok:
         print("Versieverschil gevonden! Huidige versie: " + currentVersion + ". Nieuwste versie: " + content)
         print("Downloading new version now!")
         newVersion = requests.get("https://github.com/repos/Wimpeyy/ToffeToeterTeamnaamTool/contents/dist/teamnaamtool.exe")
-        open("teamnaamtool.exe", "wb").write(newVersion.content)
+        open("main.exe", "wb").write(newVersion.content)
         print("New version downloaded, restarting in 5 seconds!")
         time.sleep(5)
         quit()
