@@ -3,9 +3,11 @@ from tkinter import *
 from tkinter import filedialog as fd
 import openpyxl
 import docx
-from docx.shared import Pt, Cm
+from docx import Document
+from docx.shared import Pt, Cm, Mm
 import base64
 import requests
+from docx2pdf import convert
 
 # variables
 wb_obj = None
@@ -15,7 +17,7 @@ text_convert_done = "Converteren geslaagd!"
 text_geen_bestand_gekozen = "Geen bestand gekozen!"
 text_bestand_geladen = "Bestand geladen: "
 
-currentVersion = '1.0.2'
+currentVersion = '1.0.3'
 url = 'https://api.github.com/repos/Wimpeyy/ToffeToeterTeamnaamTool/contents/version.html'
 req = requests.get(url)
 if req.status_code == requests.codes.ok:
@@ -28,13 +30,15 @@ if req.status_code == requests.codes.ok:
     else:
         print("Versieverschil gevonden! Huidige versie: " + currentVersion + ". Nieuwste versie: " + content)
         print("Downloading new version now!")
-        newVersion = requests.get("https://github.com/repos/Wimpeyy/ToffeToeterTeamnaamTool/contents/dist/teamnaamtool.exe")
+        newVersion = requests.get(
+            "https://github.com/repos/Wimpeyy/ToffeToeterTeamnaamTool/contents/dist/teamnaamtool.exe")
         open("main.exe", "wb").write(newVersion.content)
         print("New version downloaded, restarting in 5 seconds!")
         time.sleep(5)
         quit()
 else:
     print('Content was not found.')
+
 
 # if data == currentVersion:
 #     print("App is up to date!")
@@ -78,44 +82,56 @@ def save_to_word():
         # Loop door bestand om cellen te laden en te vullen in Word
         for i in range(1, row + 1):
             cell_teamnaam = sheet_obj.cell(row=i, column=1)
-            cell_groepsgrootte = sheet_obj.cell(row=i, column=2)
-            paragraph = doc.add_paragraph()
-            paragraph.clear()
-            run = paragraph.add_run()
-            run.font.name = 'Arnhem'
-
             teamNaam = str(cell_teamnaam.value)
-            if len(teamNaam.strip()) <= 24:
-                run.font.size = Pt(200)
-            else:
-                run.font.size = Pt(170)
-            # Ruimte genereren tussen teamnamen
-            run.add_break()
-
-
-            # Toevoegen teamnaam
-            run = paragraph.add_run()
-            run.font.name = "Raleway Black"
-            run.font.size = Pt(42)
-            run.text = str(cell_teamnaam.value) + " "
-
-            # Line break
-            run = paragraph.add_run()
-            run.add_break()
-
-            # Toevoegen teamgrootte
-            run = paragraph.add_run()
-            run.font.name = "Santral-Book"
-            run.font.size = Pt(16)
-            run.text = str(cell_groepsgrootte.value) + " PERSONEN | " + start_time
-
+            cell_groepsgrootte = sheet_obj.cell(row=i, column=2)
+            groepsgrootte = str(cell_groepsgrootte.value)
+            vul_teamnaam(groepsgrootte, teamNaam, doc, start_time)
 
             # if i % 2 == 0:
             #     # Forced page break na 2 teams
             #     doc.add_page_break()
 
+        # Extra bordjes voor last-minute quizzers
+        if sheet_obj.max_row % 2 == 0:
+            vul_teamnaam("", ".", doc, start_time)
+        vul_teamnaam("", ".", doc, start_time)
+
+        sections.bottom_margin = Mm(25.4)
+        sections.header_distance = Mm(12.7)
+        sections.footer_distance = Mm(12.7)
+        sections.page_height = Mm(297)
+
         doc.save(word_path + '/' + word_bestandsnaam + ".docx")
+
+        convert(word_path + '/' + word_bestandsnaam + ".docx", word_path + '/' + word_bestandsnaam + ".pdf")
+
         label_converteren_klaar.config(text=text_convert_done + " Bestandsnaam: " + word_bestandsnaam + ".docx")
+
+
+def vul_teamnaam(groepsgrootte, teamNaam, doc, start_time):
+    paragraph = doc.add_paragraph()
+    paragraph.clear()
+    run = paragraph.add_run()
+    run.font.name = 'Arnhem'
+    if len(teamNaam.strip()) <= 24:
+        run.font.size = Pt(206)
+    else:
+        run.font.size = Pt(164)
+    # Ruimte genereren tussen teamnamen
+    run.add_break()
+    # Toevoegen teamnaam
+    run = paragraph.add_run()
+    run.font.name = "Raleway Black"
+    run.font.size = Pt(42)
+    run.text = teamNaam + " "
+    # Line break
+    run = paragraph.add_run()
+    run.add_break()
+    # Toevoegen teamgrootte
+    run = paragraph.add_run()
+    run.font.name = "Santral-Book"
+    run.font.size = Pt(16)
+    run.text = groepsgrootte + " PERSONEN | " + start_time
 
 
 def select_file():
